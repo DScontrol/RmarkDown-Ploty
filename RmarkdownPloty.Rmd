@@ -1,0 +1,82 @@
+---
+title: "R Markdown & Plotly Presentation"
+subtitle: "Coursera Developing Data Products"
+author: "Alex M."
+date: "2/9/2021"
+output:
+  ioslides_presentation: default
+  slidy_presentation: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+
+```{r data peraration, include=FALSE, warning=FALSE, message=FALSE}
+library(dplyr)
+library(babynames)
+
+#loading the data 
+babyNames<-tibble(babynames)
+summary(babyNames)
+
+
+#search the top 10 male names since 1880
+# top 10 male names
+babyMalesNames <- babyNames %>% 
+  filter(sex=="M") %>%
+  select(name,n)
+
+rank<-babyMalesNames %>% group_by(name) %>% summarize_all(sum) %>% arrange(desc(n))
+rankMalesTop10<-rank$name[1:10]
+rankMalesTop10
+
+# top 10 male names
+babyFemalesNames <- babyNames %>% 
+  filter(sex=="F") %>%
+  select(name,n)
+
+rankF<-babyFemalesNames %>% group_by(name) %>% summarize_all(sum) %>% arrange(desc(n))
+rankFemaleTop10<-rankF$name[1:10]
+rankFemaleTop10
+
+#top rank male & female
+rankTop10<-c(rankMalesTop10,rankFemaleTop10)
+
+dataplot2 <- babynames %>% 
+  filter(name %in% rankTop10)
+
+```
+
+## Most Popular Names in America
+
+```{r plot, echo = FALSE, message=FALSE, warning=FALSE, cache=TRUE}
+library(plotly)
+
+my_plot<- dataplot2 %>%
+  plot_ly(
+    x = ~year,
+    y = ~n,
+    size = ~prop,
+    color = ~name,
+    frame = ~ year,
+    text = ~name,
+    hoverinfo = "text",
+    type = 'scatter',
+    mode = 'markers'
+  )
+my_plot <- my_plot %>% layout(
+  xaxis = list(
+    type = "log"
+  ),
+  yaxis =list(
+    title = "Number of babies born"
+  )  
+)   
+
+my_plot
+```
+
+
+
